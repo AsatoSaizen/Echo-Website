@@ -10,6 +10,7 @@
       -webkit-text-decoration-skip: none;
       text-decoration-skip-ink: none;
       -webkit-user-modify: read-only;
+      height: 100%;
     }
 
     * {
@@ -22,12 +23,14 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0a1a2a 0%, #1a3a5a 100%);
+      background: #0a1a2a;
+      background: linear-gradient(135deg, #0a1a2a 0%, #1a3a5a 100%) fixed;
       color: #E6E1E6;
       min-height: 100vh;
       line-height: 1.5;
       cursor: default;
       spellcheck: false;
+      overflow-x: hidden;
     }
 
     nav {
@@ -206,7 +209,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-wrap: nowrap;
       gap: 15px;
       margin: 1.5rem 0;
     }
@@ -480,6 +482,11 @@
       
       .popup-body {
         padding: 15px;
+      }
+      
+      .download-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
       }
     }
   </style>
