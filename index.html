@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ECHO - Repository Explorer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    html, body {
+      -webkit-text-decoration-skip: none;
+      text-decoration-skip-ink: none;
+      -webkit-user-modify: read-only;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      text-decoration: none !important;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a1a2a 0%, #1a3a5a 100%);
+      color: #E6E1E6;
+      min-height: 100vh;
+      line-height: 1.5;
+      cursor: default;
+      spellcheck: false;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 5%;
+      background: rgba(26, 21, 37, 0.8);
+      border-bottom: 1px solid #2D263D;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .nav-title {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .nav-icon {
+      color: #C4B9CD;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+
+    /* Menu Button Styles */
+    .menu-btn {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      transition: all .5s ease-in-out;
+      z-index: 101;
+    }
+    
+    .menu-btn__burger {
+      width: 25px;
+      height: 3px;
+      background: #C4B9CD;
+      border-radius: 3px;
+      transition: all .5s ease-in-out;
+    }
+    
+    .menu-btn__burger::before,
+    .menu-btn__burger::after {
+      content: '';
+      position: absolute;
+      width: 25px;
+      height: 3px;
+      background: #C4B9CD;
+      border-radius: 3px;
+      transition: all .5s ease-in-out;
+    }
+    
+    .menu-btn__burger::before {
+      transform: translateY(-8px);
+    }
+    
+    .menu-btn__burger::after {
+      transform: translateY(8px);
+    }
+    
+    /* Animation */
+    .menu-btn.open .menu-btn__burger {
+      transform: translateX(-50px);
+      background: transparent;
+    }
+    
+    .menu-btn.open .menu-btn__burger::before {
+      transform: rotate(45deg) translate(35px, -35px);
+      background: #03a9f4;
+    }
+    
+    .menu-btn.open .menu-btn__burger::after {
+      transform: rotate(-45deg) translate(35px, 35px);
+      background: #03a9f4;
+    }
+
+    /* Dropdown Menu */
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 5%;
+      background: rgba(26, 21, 37, 0.95);
+      border: 1px solid #2D263D;
+      border-radius: 8px;
+      padding: 10px 0;
+      width: 180px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .dropdown-menu.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px 20px;
+      color: #C4B9CD;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    .dropdown-menu a:hover {
+      color: #03a9f4;
+      background: rgba(3, 169, 244, 0.1);
+    }
+
+    .dropdown-menu a i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .big-center-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 3rem 0;
+      text-align: center;
+    }
+
+    .big-center-logo a {
+      display: block;
+    }
+
+    .big-center-logo img {
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .big-center-logo img:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-text {
+      color: #03a9f4;
+      font-size: 2rem;
+      font-weight: 600;
+      margin-top: 1rem;
+      text-transform: uppercase;
+    }
+
+    .intro-text {
+      color: #A89DB5;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 1.5rem auto 0;
+      padding: 0 1rem;
+      line-height: 1.6;
+    }
+
+    .download-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 15px;
+      margin: 1.5rem 0;
+    }
+
+    .nightly-btn,
+    .stable-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0.5rem 1.2rem;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      min-width: 130px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .nightly-btn {
+      background: #8A2BE2;
+    }
+
+    .nightly-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+      background: #7B26C7;
+    }
+
+    .stable-btn {
+      background: #03a9f4;
+    }
+
+    .stable-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(3, 169, 244, 0.3);
+      background: #0288d1;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 5%;
+    }
+
+    .feature-card {
+      background: rgba(3, 169, 244, 0.08);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 2rem;
+      border-radius: 20px;
+      border: 1px solid rgba(3, 169, 244, 0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      min-height: 280px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(3, 169, 244, 0.15);
+      outline: none;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 40px rgba(3, 169, 244, 0.3);
+      border-color: rgba(3, 169, 244, 0.5);
+    }
+
+    .feature-card:focus {
+      outline: 2px solid #03a9f4;
+      outline-offset: 2px;
+    }
+
+    .feature-card h3 {
+      color: #03a9f4;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+      color: #D3EFFF;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .feature-icon {
+      color: #03a9f4;
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .bass-card .eq-bars {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      height: 60px;
+      margin-top: 1.5rem;
+    }
+
+    .bass-card .eq-bar {
+      width: 8px;
+      background: linear-gradient(to top, #03a9f4, #b0e0ff);
+      border-radius: 4px;
+      animation: equalize 3s infinite ease-in-out;
+    }
+
+    .bass-card .eq-bar:nth-child(1) { height: 20%; animation-delay: 0.1s; }
+    .bass-card .eq-bar:nth-child(2) { height: 40%; animation-delay: 0.2s; }
+    .bass-card .eq-bar:nth-child(3) { height: 70%; animation-delay: 0.3s; }
+    .bass-card .eq-bar:nth-child(4) { height: 30%; animation-delay: 0.4s; }
+    .bass-card .eq-bar:nth-child(5) { height: 60%; animation-delay: 0.5s; }
+    .bass-card .eq-bar:nth-child(6) { height: 50%; animation-delay: 0.6s; }
+    .bass-card .eq-bar:nth-child(7) { height: 80%; animation-delay: 0.7s; }
+    .bass-card .eq-bar:nth-child(8) { height: 30%; animation-delay: 0.8s; }
+
+    @keyframes equalize {
+      0%, 100% { height: 50%; }
+      14% { height: 20%; }
+      28% { height: 70%; }
+      42% { height: 30%; }
+      56% { height: 90%; }
+      70% { height: 40%; }
+      84% { height: 60%; }
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 5%;
+      background: rgba(26, 21, 37, 0.8);
+      border-top: 1px solid #2D263D;
+      margin-top: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    footer p {
+      color: #6B5B7D;
+      font-size: 0.9rem;
+    }
+
+    /* Popup Tab Styles */
+    .popup-tab {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .popup-content {
+      width: 90%;
+      max-width: 800px;
+      max-height: 90vh;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      overflow: hidden;
+      position: relative;
+      animation: fadeInUp 0.4s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .popup-header {
+      background: rgba(255,255,255,0.2);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .popup-title {
+      color: #00796b;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .close-btn {
+      width: 30px;
+      height: 30px;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .close-btn:hover {
+      transform: rotate(90deg);
+    }
+    
+    .close-btn::before, 
+    .close-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 3px;
+      background: #00796b;
+      border-radius: 3px;
+    }
+    
+    .close-btn::before {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    
+    .close-btn::after {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    
+    .popup-body {
+      padding: 25px;
+      color: #00695c;
+      overflow-y: auto;
+      max-height: calc(90vh - 70px);
+    }
+    
+    /* Guide specific styles */
+    .step {
+      margin-bottom: 20px;
+      padding-left: 20px;
+      border-left: 3px solid #00acc1;
+    }
+    
+    .note {
+      background: rgba(255,255,255,0.4);
+      padding: 15px;
+      border-radius: 5px;
+      margin: 15px 0;
+      border-left: 4px solid #00acc1;
+    }
+    
+    /* FAQ specific styles */
+    .faq-item {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px dashed rgba(0,150,136,0.3);
+    }
+    
+    .question {
+      font-weight: bold;
+      color: #00838f;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    
+    .answer {
+      color: #006064;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .popup-content {
+        width: 95%;
+      }
+      
+      .popup-body {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body spellcheck="false">
+  <nav>
+    <div class="nav-left">
+      <div class="nav-title">Echo</div>
+      <a href="https://github.com/brahmkshatriya/echo" target="_blank" class="nav-icon" title="GitHub">
+        <i class="fab fa-github"></i>
+      </a>
+    </div>
+    
+    <!-- Animated Menu Button -->
+    <div class="menu-btn" id="menuBtn">
+      <div class="menu-btn__burger"></div>
+    </div>
+    
+    <!-- Dropdown Menu -->
+    <div class="dropdown-menu" id="dropdownMenu">
+      <a href="#" id="guideLink">
+        <i class="fas fa-book"></i> Guide
+      </a>
+      <a href="#" id="faqLink">
+        <i class="fas fa-question-circle"></i> FAQ
+      </a>
+    </div>
+  </nav>
+
+  <div class="big-center-logo">
+    <a href="https://youtu.be/RLw1-xyTvTY" target="_blank">
+      <img src="https://ik.imagekit.io/asatosaizen/ic_launcher-playstore.png?updatedAt=1745639139266" alt="Clickable Logo">
+      <div class="logo-text">ECHO</div>
+    </a>
+    <div class="intro-text">
+      Echo music player the best Extension-based Music Player for Android, designed with a clean and intuitive UI.
+    </div>
+    <div class="download-buttons">
+      <a href="#" class="stable-btn">
+        <i class="fas fa-download"></i> Stable Release
+      </a>
+      <a href="#" class="nightly-btn">
+        <i class="fas fa-moon"></i> Nightly Release
+      </a>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px; display: flex; justify-content: center;">
+    <img src="https://ik.imagekit.io/asatosaizen/EchoPv1.png?updatedAt=1745569136742"
+         alt="Echo Preview"
+         style="width: 100%; max-width: 320px; border-radius: 12px; transform: translateX(-5px);" />
+  </div>
+
+  <div class="features">
+    <a href="#" class="feature-card extension-card" tabindex="0">
+      <i class="fas fa-puzzle-piece feature-icon"></i>
+      <h3>Extension Support</h3>
+      <p>Customize and enhance your listening experience through the echo extensions.</p>
+    </a>
+
+    <a href="#" class="feature-card bass-card" tabindex="0">
+      <i class="fas fa-volume-up feature-icon"></i>
+      <h3>Bass Boost</h3>
+      <p>Master your music with customizable audio tools: adjust speed, pitch, and bass for the perfect sound. Fine-tune every detail—your way!</p>
+      <div class="eq-bars">
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+        <div class="eq-bar"></div>
+      </div>
+    </a>
+
+    <a href="#" class="feature-card radio-card" tabindex="0">
+      <i class="fas fa-broadcast-tower feature-icon"></i>
+      <h3>Radio Streaming</h3>
+      <p>Access thousands of radio stations from around the world. Discover new music, news, and podcasts with crystal clear quality.</p>
+    </a>
+  </div>
+
+  <footer>
+    <p>Copyright © 2025 Echo Music Player.</p>
+  </footer>
+
+  <!-- Guide Popup Tab -->
+  <div class="popup-tab" id="guidePopup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <div class="popup-title">Echo Music Player Guide</div>
+        <div class="close-btn" id="closeGuide"></div>
+      </div>
+      <div class="popup-body">
+        <p>Welcome to the Echo guide. Here's how to get the most out of your music experience.</p>
+        
+        <h2 style="color: #00838f; margin-top: 25px; margin-bottom: 15px;">Getting Started</h2>
+        <div class="step">
+          <h3 style="color: #0097a7;">1. Installation</h3>
+          <p>Download and install Echo from the official website or GitHub Repositories.</p>
+        </div>
+        
+        <div class="step">
+          <h3 style="color: #0097a7;">2. How to change an Extension </h3>
+          <p>Navigate to extension icon at the top and change the extension .</p>
+          <div class="note">
+            <strong>Note:</strong> Echo supports MP3, FLAC, AAC, and other popular audio formats.
+          </div>
+        </div>
+        
+        <h2 style="color: #00838f; margin-top: 30px; margin-bottom: 15px;">Features</h2>
+        <div class="step">
+          <h3 style="color: #0097a7;">1. Installing Extensions</h3>
+          <p>Click on the Extension icon (located at the top right of your screen, next to the Settings icon).Select Add Extension..</p>
+                    <div class="note">
+            <strong>Note:</strong> The developer is not responsible for any misuse of this app, and is not responsible for any damages or legal implications caused by the use of this app.
+
+This app does not provide any download or streaming service from any online source.
+
+It was solely created for educational purposes.
+          </div>
+        </div>
+        
+        <div class="step">
+          <h3 style="color: #0097a7;">2. Audio Customization</h3>
+          <p>Access the Audio Effects from the Now Playing screen to adjust bass, pitch, and other audio settings.</p>
+        </div>
+        
+        <h2 style="color: #00838f; margin-top: 30px; margin-bottom: 15px;">Troubleshooting</h2>
+        <div class="step">
+          <h3 style="color: #0097a7;">Music Not Showing Up?</h3>
+          <p>
+ 1: App Issues
+- Force stop & clear cache
+- Restart device
+- Update app/extensions.
+</p>
+2: Playback Problems
+- Check file format support
+- Verify storage permissions
+- Disable battery optimization.
+</p>
+3: Extensions Not Working
+- Reinstall problematic extension
+- Check for version conflicts
+- Run in safe mode (disable all extensions).
+</p>
+4: Crashing/Lag
+- Disable memory-heavy extensions
+- Reduce audio effects/visualizations
+- Close background apps.
+</p>
+5: Still Not Working?
+- Uninstall/reinstall app and Extension 
+- Report a bug on our GitHub Repositories or Discord server with
+- Android version
+- Extension version
+- Error details.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Popup Tab -->
+  <div class="popup-tab" id="faqPopup">
+    <div class="popup-content">
+      <div class="popup-header">
+        <div class="popup-title">ECHO FAQ</div>
+        <div class="close-btn" id="closeFaq"></div>
+      </div>
+      <div class="popup-body">
+        <p>Frequently asked questions about Echo</p>
+        
+        <div class="faq-item">
+          <div class="question">Q: Is Echo Free?</div>
+          <div class="answer">A: Yes, Echo is completely free and open source.</div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="question">Q: What audio formats does Echo support?</div>
+          <div class="answer">A: Echo supports MP3, FLAC, AAC, WAV, OGG, and most other common audio formats.</div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="question">Q: How do I install extensions?</div>
+          <div class="answer">Click on the Extension icon (located at the top right of your screen, next to the Settings icon). Select Add Extension.</div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="question">Q: Can I use Echo with streaming services?</div>
+          <div class="answer">A: Yes, through extensions. Some extensions allow integration with popular streaming services.</div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="question">Q: Why can't Echo find my music files?</div>
+          <div class="answer">A: Make sure you've granted storage permissions and added the correct folders in Settings > Music Folders.</div>
+        </div>
+        
+        <div class="faq-item">
+          <div class="question">Q: How do I report a bug or request a feature?</div>
+          <div class="answer">A: You can report issues or request features on our GitHub repository or our Discord server.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Menu Button Functionality
+    const menuBtn = document.getElementById('menuBtn');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+    const guideLink = document.getElementById('guideLink');
+    const faqLink = document.getElementById('faqLink');
+    const guidePopup = document.getElementById('guidePopup');
+    const faqPopup = document.getElementById('faqPopup');
+    const closeGuide = document.getElementById('closeGuide');
+    const closeFaq = document.getElementById('closeFaq');
+    
+    menuBtn.addEventListener('click', function() {
+      menuBtn.classList.toggle('open');
+      dropdownMenu.classList.toggle('active');
+      
+      // Close menu when clicking outside
+      if (dropdownMenu.classList.contains('active')) {
+        document.addEventListener('click', closeMenuOnClickOutside);
+      } else {
+        document.removeEventListener('click', closeMenuOnClickOutside);
+      }
+    });
+    
+    function closeMenuOnClickOutside(e) {
+      if (!menuBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        menuBtn.classList.remove('open');
+        dropdownMenu.classList.remove('active');
+        document.removeEventListener('click', closeMenuOnClickOutside);
+      }
+    }
+    
+    // Guide Link - Show guide popup
+    guideLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      guidePopup.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      menuBtn.classList.remove('open');
+      dropdownMenu.classList.remove('active');
+    });
+    
+    // FAQ Link - Show FAQ popup
+    faqLink.addEventListener('click', function(e) {
+      e.preventDefault();
+      faqPopup.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      menuBtn.classList.remove('open');
+      dropdownMenu.classList.remove('active');
+    });
+    
+    // Close Guide Popup
+    closeGuide.addEventListener('click', function() {
+      guidePopup.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    });
+    
+    // Close FAQ Popup
+    closeFaq.addEventListener('click', function() {
+      faqPopup.style.display = 'none';
+      document.body.style.overflow = 'auto';
+    });
+    
+    // Close popups when clicking outside content
+    [guidePopup, faqPopup].forEach(popup => {
+      popup.addEventListener('click', function(e) {
+        if (e.target === popup) {
+          popup.style.display = 'none';
+          document.body.style.overflow = 'auto';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
